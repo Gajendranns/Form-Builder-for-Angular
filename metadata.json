@@ -1,0 +1,6 @@
+{
+  "name": "NgFormCraft - Angular Form & Table Builder",
+  "description": "Visual drag-and-drop form and data table builder inspired by tancn.dev. Solves Angular form challenges with typed Reactive Forms, FormArrays, Signals, Zod validation, and instant code generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
