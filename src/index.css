@@ -10,6 +10,13 @@
   }
 }
 
+/* Custom field placeholder variable support */
+input[style*="--placeholder-color"]::placeholder,
+textarea[style*="--placeholder-color"]::placeholder {
+  color: var(--placeholder-color) !important;
+  opacity: 1;
+}
+
 /* Custom sleek scrollbars for builder canvases and code preview panels */
 ::-webkit-scrollbar {
   width: 6px;

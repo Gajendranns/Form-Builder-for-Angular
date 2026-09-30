@@ -1,12 +1,14 @@
 import JSZip from 'jszip';
 import { FormConfig } from '../../types/form';
 import { generateAngularReactiveCode } from './angularReactiveGenerator';
+import { generateAngularSignalCode } from './angularSignalFormGenerator';
 import { generateZodSchema } from './zodSchemaGenerator';
 import { generateTanStackAngularCode } from './tanstackAngularGenerator';
 
 export async function generateProjectZip(config: FormConfig): Promise<Blob> {
   const zip = new JSZip();
   const reactiveCode = generateAngularReactiveCode(config);
+  const signalCode = generateAngularSignalCode(config);
   const zodSchema = generateZodSchema(config);
   const tanstackCode = generateTanStackAngularCode(config);
 
@@ -66,11 +68,12 @@ npm start
 Navigate to \`http://localhost:4200/\`.
 
 ## Form Architecture Highlights
-- **Framework**: Angular 19+ Standalone Components with Reactive Forms & Signals
-- **FormArray**: Strongly typed repeater fields using modern \`@for\` control flow
-- **Validation**: Schema-driven validation with Zod (\`src/app/${config.id}.schema.ts\`)
+- **Official Angular Signal Forms**: \`src/app/${config.id}-signal.component.ts\` (Built with @angular/forms/signals as documented on https://angular.dev/essentials/signal-forms)
+- **Angular Reactive Forms + Signals**: \`src/app/${config.id}-form.component.ts\`
+- **TanStack Angular Form**: \`src/app/${config.id}.tanstack.component.ts\` (Headless Zod-driven forms)
+- **Zod Schema**: \`src/app/${config.id}.schema.ts\`
+- **FormArray Repeater**: Strongly typed repeater fields using modern \`@for\` control flow
 - **Styling**: Tailwind CSS modern utility classes
-- **Alternative TanStack Form**: See \`src/app/${config.id}.tanstack.component.ts\` for the headless TanStack Angular Form implementation.
 `;
 
   // Add files to zip
@@ -79,9 +82,17 @@ Navigate to \`http://localhost:4200/\`.
 
   const srcApp = zip.folder('src/app');
   if (srcApp) {
+    // Angular 19+ Signal Form
+    srcApp.file(`${config.id}-signal.component.ts`, signalCode.tsCode);
+    srcApp.file(`${config.id}-signal.component.html`, signalCode.htmlCode);
+    srcApp.file(`${config.id}-signal.component.css`, '/* Signal component styles */\n');
+
+    // Angular Reactive Form
     srcApp.file(`${config.id}-form.component.ts`, reactiveCode.tsCode);
     srcApp.file(`${config.id}-form.component.html`, reactiveCode.htmlCode);
     srcApp.file(`${config.id}-form.component.css`, '/* Component specific CSS if needed */\n');
+
+    // Zod Schema & TanStack Form
     srcApp.file(`${config.id}.schema.ts`, zodSchema);
     srcApp.file(`${config.id}.tanstack.component.ts`, tanstackCode);
   }

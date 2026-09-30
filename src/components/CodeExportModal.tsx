@@ -11,9 +11,11 @@ import {
   ExternalLink,
   Sparkles,
   BookOpen,
+  Zap,
 } from 'lucide-react';
 import { FormConfig } from '../types/form';
 import { generateAngularReactiveCode } from '../utils/codeGenerators/angularReactiveGenerator';
+import { generateAngularSignalCode } from '../utils/codeGenerators/angularSignalFormGenerator';
 import { generateTanStackAngularCode } from '../utils/codeGenerators/tanstackAngularGenerator';
 import { generateZodSchema } from '../utils/codeGenerators/zodSchemaGenerator';
 import { generateProjectZip } from '../utils/codeGenerators/projectZipGenerator';
@@ -31,40 +33,54 @@ export const CodeExportModal: React.FC<CodeExportModalProps> = ({
   onClose,
   isInlineTab = false,
 }) => {
-  const [activeFileTab, setActiveFileTab] = useState<'reactive-ts' | 'reactive-html' | 'tanstack' | 'zod' | 'readme'>('reactive-ts');
+  const initialTab =
+    formConfig.frameworkTarget === 'angular-signal-form'
+      ? 'signal-ts'
+      : formConfig.frameworkTarget === 'tanstack-angular-form'
+      ? 'tanstack'
+      : 'reactive-ts';
+
+  const [activeFileTab, setActiveFileTab] = useState<
+    'signal-ts' | 'signal-html' | 'reactive-ts' | 'reactive-html' | 'tanstack' | 'zod' | 'readme'
+  >(initialTab);
   const [copied, setCopied] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
 
+  const signalCode = generateAngularSignalCode(formConfig);
   const reactiveCode = generateAngularReactiveCode(formConfig);
   const tanstackCode = generateTanStackAngularCode(formConfig);
   const zodSchema = generateZodSchema(formConfig);
 
   const readmeContent = `# ${formConfig.title}
-Angular Standalone Form generated with NgFormCraft (tancn.dev for Angular).
+Modern Angular Form generated with NgFormCraft (tancn.dev for Angular).
+
+## Architecture Targets Provided:
+
+1. **Official Angular Signal Forms (@angular/forms/signals)**:
+   - Official documentation: https://angular.dev/essentials/signal-forms
+   - \`src/app/${formConfig.id}-signal.component.ts\`
+   - \`src/app/${formConfig.id}-signal.component.html\`
+   - Uses the official \`form()\` function, declarative schema validators (\`required\`, \`minLength\`, \`email\`, etc.), \`[formField]\` directive, and \`submit()\` helper.
+
+2. **Angular Reactive Forms + Signal Bridge**:
+   - \`src/app/${formConfig.id}-form.component.ts\`
+   - \`src/app/${formConfig.id}-form.component.html\`
+
+3. **@tanstack/angular-form (Headless + Zod)**:
+   - \`src/app/${formConfig.id}.tanstack.component.ts\`
+   - \`src/app/${formConfig.id}.schema.ts\`
 
 ## Setup Instructions
 
-1. Create or open your Angular 17/18/19 project:
+1. Create or open your Angular project:
 \`\`\`bash
 ng new my-angular-app --standalone --style=css
 cd my-angular-app
 \`\`\`
 
-2. Install dependencies:
-\`\`\`bash
-npm install zod
-# If using @tanstack/angular-form:
-npm install @tanstack/angular-form @tanstack/zod-form-adapter
-\`\`\`
-
-3. Place files in your project:
-- \`src/app/${formConfig.id}-form.component.ts\`
-- \`src/app/${formConfig.id}-form.component.html\`
-- \`src/app/${formConfig.id}.schema.ts\`
-
-4. Render inside your main view:
+2. Render the official Signal Form:
 \`\`\`html
-<app-${formConfig.id}-form />
+<app-${formConfig.id}-signal-form />
 \`\`\`
 `;
 
@@ -73,6 +89,16 @@ npm install @tanstack/angular-form @tanstack/zod-form-adapter
   let language = 'typescript';
 
   switch (activeFileTab) {
+    case 'signal-ts':
+      currentCode = signalCode.tsCode;
+      currentFileName = `${formConfig.id}-signal.component.ts`;
+      language = 'typescript';
+      break;
+    case 'signal-html':
+      currentCode = signalCode.htmlCode;
+      currentFileName = `${formConfig.id}-signal.component.html`;
+      language = 'html';
+      break;
     case 'reactive-ts':
       currentCode = reactiveCode.tsCode;
       currentFileName = `${formConfig.id}-form.component.ts`;
@@ -182,6 +208,33 @@ npm install @tanstack/angular-form @tanstack/zod-form-adapter
 
       {/* File Navigation Tabs */}
       <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-slate-800">
+        <button
+          onClick={() => setActiveFileTab('signal-ts')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+            activeFileTab === 'signal-ts'
+              ? 'border-emerald-500 bg-slate-900/90 text-white font-semibold'
+              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+          }`}
+        >
+          <Zap className="h-3.5 w-3.5 text-emerald-400" />
+          <span>{formConfig.id}-signal.component.ts</span>
+          <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-950 text-emerald-300 font-mono border border-emerald-800/40">
+            Signals
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveFileTab('signal-html')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+            activeFileTab === 'signal-html'
+              ? 'border-emerald-500 bg-slate-900/90 text-white font-semibold'
+              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+          }`}
+        >
+          <FileText className="h-3.5 w-3.5 text-emerald-400" />
+          <span>{formConfig.id}-signal.component.html</span>
+        </button>
+
         <button
           onClick={() => setActiveFileTab('reactive-ts')}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-t-lg text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${

@@ -9,6 +9,8 @@ import {
   Plus,
   X,
   FileCode2,
+  Palette,
+  RotateCcw,
 } from 'lucide-react';
 import { FormField, FormConfig, FieldOption } from '../types/form';
 
@@ -33,7 +35,7 @@ export const FieldInspector: React.FC<FieldInspectorProps> = ({
   onUpdateFormConfig,
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'general' | 'validation' | 'conditional'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'style' | 'validation' | 'conditional'>('general');
 
   // If no field selected, show Form-Level Settings
   if (!selectedField) {
@@ -114,14 +116,30 @@ export const FieldInspector: React.FC<FieldInspectorProps> = ({
 
           {/* Target Engine */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-300">Code Target</label>
+            <label className="text-[11px] font-medium text-slate-300">Code Architecture</label>
             <select
               value={formConfig.frameworkTarget}
               onChange={(e) => onUpdateFormConfig({ frameworkTarget: e.target.value as any })}
               className="w-full px-2.5 py-1 text-xs bg-slate-900 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-rose-500"
             >
+              <option value="angular-signal-form">Angular Signal Forms (@angular/forms/signals)</option>
               <option value="angular-reactive-signals">Angular Standalone (Reactive + Signals)</option>
               <option value="tanstack-angular-form">@tanstack/angular-form (Zod)</option>
+            </select>
+          </div>
+
+          {/* UI Framework Theme */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium text-slate-300">UI Component Theme</label>
+            <select
+              value={formConfig.uiFramework || 'tailwind'}
+              onChange={(e) => onUpdateFormConfig({ uiFramework: e.target.value as any })}
+              className="w-full px-2.5 py-1 text-xs bg-slate-900 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-rose-500"
+            >
+              <option value="tailwind">Tailwind UI (Modern Slate & Rose Glass)</option>
+              <option value="material">Angular Material (Google M3 Outlined & Tonal)</option>
+              <option value="shadcn">shadcn / Spartan UI (Minimalist Zinc Mono)</option>
+              <option value="primeng">PrimeNG Aura (Enterprise Cyan Structured)</option>
             </select>
           </div>
 
@@ -229,6 +247,21 @@ export const FieldInspector: React.FC<FieldInspectorProps> = ({
         >
           <Sliders className="h-3.5 w-3.5" />
           <span>General</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('style')}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border-b-2 transition-colors ${
+            activeTab === 'style'
+              ? 'border-rose-500 text-white font-semibold'
+              : 'border-transparent text-slate-400 hover:text-slate-300'
+          }`}
+        >
+          <Palette className="h-3.5 w-3.5" />
+          <span>Colors</span>
+          {(selectedField.labelColor || selectedField.borderColor || selectedField.textColor || selectedField.placeholderColor) && (
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+          )}
         </button>
 
         <button
@@ -461,6 +494,387 @@ export const FieldInspector: React.FC<FieldInspectorProps> = ({
               </div>
             )}
           </>
+        )}
+
+        {activeTab === 'style' && (
+          <div className="space-y-5">
+            {/* Live Visual Preview of Field with Custom Colors */}
+            <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2.5">
+              <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                <span>LIVE PREVIEW</span>
+                <span className="uppercase text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                  {selectedField.type}
+                </span>
+              </div>
+              <div className="space-y-1.5 p-3 rounded-lg bg-slate-950 border border-slate-800/80">
+                <label
+                  className="text-xs font-semibold block transition-colors"
+                  style={{ color: selectedField.labelColor || '#e2e8f0' }}
+                >
+                  {selectedField.label || 'Field Label'}
+                  {selectedField.validation?.required && (
+                    <span className="text-rose-400 ml-0.5">*</span>
+                  )}
+                </label>
+                <div
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border transition-all flex items-center justify-between"
+                  style={{
+                    borderColor: selectedField.borderColor || '#334155',
+                    color: selectedField.textColor || '#f8fafc',
+                  }}
+                >
+                  <span style={{ color: selectedField.placeholderColor || '#64748b' }}>
+                    {selectedField.placeholder || 'Placeholder preview text...'}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {selectedField.labelColor && (
+                      <span
+                        className="h-2 w-2 rounded-full border border-black/40"
+                        style={{ backgroundColor: selectedField.labelColor }}
+                        title="Label color"
+                      />
+                    )}
+                    {selectedField.borderColor && (
+                      <span
+                        className="h-2 w-2 rounded-full border border-black/40"
+                        style={{ backgroundColor: selectedField.borderColor }}
+                        title="Border color"
+                      />
+                    )}
+                    {selectedField.textColor && (
+                      <span
+                        className="h-2 w-2 rounded-full border border-black/40"
+                        style={{ backgroundColor: selectedField.textColor }}
+                        title="Text color"
+                      />
+                    )}
+                    {selectedField.placeholderColor && (
+                      <span
+                        className="h-2 w-2 rounded-full border border-black/40"
+                        style={{ backgroundColor: selectedField.placeholderColor }}
+                        title="Placeholder color"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Sample input simulation with typed text */}
+                <div className="p-2 rounded bg-slate-900/60 border border-slate-800/60 flex items-center justify-between text-[11px]">
+                  <span className="text-[10px] text-slate-500 font-mono">Typed Value:</span>
+                  <span
+                    className="font-medium font-mono"
+                    style={{ color: selectedField.textColor || '#f8fafc' }}
+                  >
+                    John Doe (Sample Text)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Label Color Control */}
+            <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-semibold text-slate-200 block">
+                    Text Label Color
+                  </label>
+                  <p className="text-[10px] text-slate-400">
+                    Custom color for field label text
+                  </p>
+                </div>
+                {selectedField.labelColor && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdateField({ ...selectedField, labelColor: undefined })}
+                    className="text-[10px] text-rose-400 hover:text-rose-300 flex items-center gap-1"
+                    title="Reset to default label color"
+                  >
+                    <RotateCcw className="h-2.5 w-2.5" />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Native color picker & hex input */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex items-center justify-center h-8 w-8 rounded-lg border border-slate-700 overflow-hidden shrink-0 cursor-pointer shadow-sm">
+                  <input
+                    type="color"
+                    value={selectedField.labelColor || '#e2e8f0'}
+                    onChange={(e) => onUpdateField({ ...selectedField, labelColor: e.target.value })}
+                    className="absolute -inset-2 h-12 w-12 cursor-pointer border-0 p-0"
+                    title="Choose any label color"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={selectedField.labelColor || ''}
+                  placeholder="#e2e8f0 (Default)"
+                  onChange={(e) => onUpdateField({ ...selectedField, labelColor: e.target.value })}
+                  className="flex-1 px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-slate-100 font-mono focus:outline-none focus:border-rose-500"
+                />
+              </div>
+
+              {/* Label Color Palette Presets */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-mono text-slate-500">Presets</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { name: 'Default', hex: '#e2e8f0' },
+                    { name: 'White', hex: '#ffffff' },
+                    { name: 'Rose', hex: '#f43f5e' },
+                    { name: 'Sky', hex: '#38bdf8' },
+                    { name: 'Emerald', hex: '#34d399' },
+                    { name: 'Amber', hex: '#fbbf24' },
+                    { name: 'Violet', hex: '#a78bfa' },
+                    { name: 'Orange', hex: '#fb923c' },
+                    { name: 'Pink', hex: '#f472b6' },
+                  ].map((swatch) => (
+                    <button
+                      key={swatch.hex}
+                      type="button"
+                      onClick={() => onUpdateField({ ...selectedField, labelColor: swatch.hex })}
+                      className="group flex items-center gap-1 px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:border-slate-700 text-[10px] text-slate-300 transition-colors"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 rounded-full border border-black/30 shrink-0"
+                        style={{ backgroundColor: swatch.hex }}
+                      />
+                      <span>{swatch.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Border Color Control */}
+            <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-semibold text-slate-200 block">
+                    Control Border Color
+                  </label>
+                  <p className="text-[10px] text-slate-400">
+                    Custom border color for input / control
+                  </p>
+                </div>
+                {selectedField.borderColor && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdateField({ ...selectedField, borderColor: undefined })}
+                    className="text-[10px] text-rose-400 hover:text-rose-300 flex items-center gap-1"
+                    title="Reset to default border color"
+                  >
+                    <RotateCcw className="h-2.5 w-2.5" />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Native color picker & hex input */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex items-center justify-center h-8 w-8 rounded-lg border border-slate-700 overflow-hidden shrink-0 cursor-pointer shadow-sm">
+                  <input
+                    type="color"
+                    value={selectedField.borderColor || '#334155'}
+                    onChange={(e) => onUpdateField({ ...selectedField, borderColor: e.target.value })}
+                    className="absolute -inset-2 h-12 w-12 cursor-pointer border-0 p-0"
+                    title="Choose any border color"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={selectedField.borderColor || ''}
+                  placeholder="#334155 (Default)"
+                  onChange={(e) => onUpdateField({ ...selectedField, borderColor: e.target.value })}
+                  className="flex-1 px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-slate-100 font-mono focus:outline-none focus:border-rose-500"
+                />
+              </div>
+
+              {/* Border Color Palette Presets */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-mono text-slate-500">Presets</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { name: 'Default', hex: '#334155' },
+                    { name: 'Rose', hex: '#e11d48' },
+                    { name: 'Cyan', hex: '#0284c7' },
+                    { name: 'Emerald', hex: '#059669' },
+                    { name: 'Amber', hex: '#d97706' },
+                    { name: 'Violet', hex: '#7c3aed' },
+                    { name: 'Orange', hex: '#ea580c' },
+                    { name: 'White', hex: '#e2e8f0' },
+                    { name: 'Slate', hex: '#475569' },
+                  ].map((swatch) => (
+                    <button
+                      key={swatch.hex}
+                      type="button"
+                      onClick={() => onUpdateField({ ...selectedField, borderColor: swatch.hex })}
+                      className="group flex items-center gap-1 px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:border-slate-700 text-[10px] text-slate-300 transition-colors"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 rounded-full border border-black/30 shrink-0"
+                        style={{ backgroundColor: swatch.hex }}
+                      />
+                      <span>{swatch.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Input Text Color Control */}
+            <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-semibold text-slate-200 block">
+                    Input Text Color
+                  </label>
+                  <p className="text-[10px] text-slate-400">
+                    Custom color for user-entered input text
+                  </p>
+                </div>
+                {selectedField.textColor && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdateField({ ...selectedField, textColor: undefined })}
+                    className="text-[10px] text-rose-400 hover:text-rose-300 flex items-center gap-1"
+                    title="Reset to default text color"
+                  >
+                    <RotateCcw className="h-2.5 w-2.5" />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Native color picker & hex input */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex items-center justify-center h-8 w-8 rounded-lg border border-slate-700 overflow-hidden shrink-0 cursor-pointer shadow-sm">
+                  <input
+                    type="color"
+                    value={selectedField.textColor || '#f8fafc'}
+                    onChange={(e) => onUpdateField({ ...selectedField, textColor: e.target.value })}
+                    className="absolute -inset-2 h-12 w-12 cursor-pointer border-0 p-0"
+                    title="Choose any input text color"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={selectedField.textColor || ''}
+                  placeholder="#f8fafc (Default)"
+                  onChange={(e) => onUpdateField({ ...selectedField, textColor: e.target.value })}
+                  className="flex-1 px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-slate-100 font-mono focus:outline-none focus:border-rose-500"
+                />
+              </div>
+
+              {/* Text Color Palette Presets */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-mono text-slate-500">Presets</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { name: 'Default', hex: '#f8fafc' },
+                    { name: 'Pure White', hex: '#ffffff' },
+                    { name: 'Emerald', hex: '#34d399' },
+                    { name: 'Sky', hex: '#38bdf8' },
+                    { name: 'Amber', hex: '#fbbf24' },
+                    { name: 'Rose', hex: '#f43f5e' },
+                    { name: 'Violet', hex: '#a78bfa' },
+                    { name: 'Orange', hex: '#fb923c' },
+                    { name: 'Light Slate', hex: '#cbd5e1' },
+                  ].map((swatch) => (
+                    <button
+                      key={swatch.hex}
+                      type="button"
+                      onClick={() => onUpdateField({ ...selectedField, textColor: swatch.hex })}
+                      className="group flex items-center gap-1 px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:border-slate-700 text-[10px] text-slate-300 transition-colors"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 rounded-full border border-black/30 shrink-0"
+                        style={{ backgroundColor: swatch.hex }}
+                      />
+                      <span>{swatch.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Placeholder Color Control */}
+            <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-semibold text-slate-200 block">
+                    Placeholder Text Color
+                  </label>
+                  <p className="text-[10px] text-slate-400">
+                    Custom color for input hint / placeholder text
+                  </p>
+                </div>
+                {selectedField.placeholderColor && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdateField({ ...selectedField, placeholderColor: undefined })}
+                    className="text-[10px] text-rose-400 hover:text-rose-300 flex items-center gap-1"
+                    title="Reset to default placeholder color"
+                  >
+                    <RotateCcw className="h-2.5 w-2.5" />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Native color picker & hex input */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex items-center justify-center h-8 w-8 rounded-lg border border-slate-700 overflow-hidden shrink-0 cursor-pointer shadow-sm">
+                  <input
+                    type="color"
+                    value={selectedField.placeholderColor || '#64748b'}
+                    onChange={(e) => onUpdateField({ ...selectedField, placeholderColor: e.target.value })}
+                    className="absolute -inset-2 h-12 w-12 cursor-pointer border-0 p-0"
+                    title="Choose any placeholder color"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={selectedField.placeholderColor || ''}
+                  placeholder="#64748b (Default)"
+                  onChange={(e) => onUpdateField({ ...selectedField, placeholderColor: e.target.value })}
+                  className="flex-1 px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-slate-100 font-mono focus:outline-none focus:border-rose-500"
+                />
+              </div>
+
+              {/* Placeholder Color Palette Presets */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-mono text-slate-500">Presets</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { name: 'Default', hex: '#64748b' },
+                    { name: 'Subtle Muted', hex: '#475569' },
+                    { name: 'Sky Muted', hex: '#38bdf8' },
+                    { name: 'Emerald Muted', hex: '#34d399' },
+                    { name: 'Rose Muted', hex: '#fb7185' },
+                    { name: 'Amber Muted', hex: '#fcd34d' },
+                    { name: 'Violet Muted', hex: '#c4b5fd' },
+                    { name: 'Light Gray', hex: '#94a3b8' },
+                    { name: 'Dark Slate', hex: '#334155' },
+                  ].map((swatch) => (
+                    <button
+                      key={swatch.hex}
+                      type="button"
+                      onClick={() => onUpdateField({ ...selectedField, placeholderColor: swatch.hex })}
+                      className="group flex items-center gap-1 px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:border-slate-700 text-[10px] text-slate-300 transition-colors"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 rounded-full border border-black/30 shrink-0"
+                        style={{ backgroundColor: swatch.hex }}
+                      />
+                      <span>{swatch.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {activeTab === 'validation' && (

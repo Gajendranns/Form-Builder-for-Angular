@@ -10,15 +10,17 @@ import {
   X,
   PlusCircle,
   Sliders,
+  Sparkles,
 } from 'lucide-react';
-import { FormConfig } from '../types/form';
+import { FormConfig, FormEngine } from '../types/form';
 import { PRESET_FORMS } from '../data/presets';
 
 interface HeaderProps {
-  activeTab: 'builder' | 'runner' | 'table' | 'problems' | 'code';
-  setActiveTab: (tab: 'builder' | 'runner' | 'table' | 'problems' | 'code') => void;
+  activeTab: 'builder' | 'chat' | 'runner' | 'table' | 'problems' | 'code';
+  setActiveTab: (tab: 'builder' | 'chat' | 'runner' | 'table' | 'problems' | 'code') => void;
   formConfig: FormConfig;
   onSelectPreset: (presetKey: string) => void;
+  onSelectEngine?: (engine: FormEngine) => void;
   onOpenCodeModal: () => void;
   onDownloadZip: () => void;
   submissionsCount: number;
@@ -31,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   formConfig,
   onSelectPreset,
+  onSelectEngine,
   onOpenCodeModal,
   onDownloadZip,
   submissionsCount,
@@ -40,12 +43,14 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems: {
-    id: 'builder' | 'runner' | 'table' | 'problems' | 'code';
+    id: 'builder' | 'chat' | 'runner' | 'table' | 'problems' | 'code';
     label: string;
     icon: React.ElementType;
     count?: number;
+    badge?: string;
   }[] = [
     { id: 'builder', label: 'Builder', icon: Layers },
+    { id: 'chat', label: 'AI Chat', icon: Sparkles, badge: 'Gemini' },
     { id: 'runner', label: 'Preview', icon: Eye },
     { id: 'table', label: 'Table', count: submissionsCount, icon: Table },
     { id: 'problems', label: 'Solutions', icon: BookOpen },
@@ -97,6 +102,11 @@ export const Header: React.FC<HeaderProps> = ({
                     {item.count}
                   </span>
                 )}
+                {item.badge && (
+                  <span className="text-[9px] font-mono px-1 py-0.5 bg-rose-500/20 text-rose-300 rounded border border-rose-500/30">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -116,6 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
               <option value="" disabled>
                 Load Preset...
               </option>
+              <option value="signalSurvey">⚡ Angular 19 Signal Survey</option>
               <option value="registration">User Registration</option>
               <option value="formArrayTeam">Team Directory (FormArray)</option>
               <option value="multiStepWizard">Scope Wizard (Multi-Step)</option>
@@ -202,6 +213,7 @@ export const Header: React.FC<HeaderProps> = ({
               <option value="" disabled>
                 Select template preset...
               </option>
+              <option value="signalSurvey">⚡ Angular 19 Signal Survey (Pure Signals)</option>
               <option value="registration">User Registration (Cross-field Validation)</option>
               <option value="formArrayTeam">Enterprise Team (Dynamic FormArray)</option>
               <option value="multiStepWizard">Project Scope (Multi-Step Stepper)</option>

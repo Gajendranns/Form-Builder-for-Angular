@@ -86,6 +86,12 @@ ${defaultValuesObj}
 }
 
 function renderTanStackFieldTemplate(field: FormField): string {
+  const labelStyleAttr = field.labelColor ? ` [style.color]="'${escapeHtml(field.labelColor)}'"` : '';
+  const borderStyleAttr = field.borderColor ? ` [style.border-color]="'${escapeHtml(field.borderColor)}'"` : '';
+  const textStyleAttr = field.textColor ? ` [style.color]="'${escapeHtml(field.textColor)}'"` : '';
+  const placeholderStyleAttr = field.placeholderColor ? ` [style.--placeholder-color]="'${escapeHtml(field.placeholderColor)}'"` : '';
+  const controlStyleAttrs = `${borderStyleAttr}${textStyleAttr}${placeholderStyleAttr}`;
+
   if (field.type === 'checkbox' || field.type === 'switch') {
     return `        <!-- Field: ${field.label} -->
         <ng-container [tanstackField]="form" name="${field.name}">
@@ -94,10 +100,10 @@ function renderTanStackFieldTemplate(field: FormField): string {
               <input
                 type="checkbox"
                 [checked]="field.state.value"
-                (change)="field.handleChange($any($event).target.checked)"
+                (change)="field.handleChange($any($event).target.checked)"${borderStyleAttr}
                 class="rounded border-slate-700 bg-slate-900 text-rose-600 focus:ring-rose-500"
               />
-              <label class="text-xs text-slate-300">${escapeHtml(field.label)}</label>
+              <label class="text-xs text-slate-300"${labelStyleAttr}>${escapeHtml(field.label)}</label>
             </div>
             @if (field.state.meta.errors.length) {
               <p class="text-[11px] text-rose-400 mt-1">{{ field.state.meta.errors[0] }}</p>
@@ -110,7 +116,7 @@ function renderTanStackFieldTemplate(field: FormField): string {
         <ng-container [tanstackField]="form" name="${field.name}">
           <ng-template let-field>
             <div class="space-y-1">
-              <label class="block text-xs font-medium text-slate-300">
+              <label class="block text-xs font-medium text-slate-300"${labelStyleAttr}>
                 ${escapeHtml(field.label)}
                 ${field.validation?.required ? '<span class="text-rose-400">*</span>' : ''}
               </label>
@@ -119,7 +125,7 @@ function renderTanStackFieldTemplate(field: FormField): string {
                 [value]="field.state.value"
                 (input)="field.handleChange($any($event).target.value)"
                 (blur)="field.handleBlur()"
-                placeholder="${escapeHtml(field.placeholder || '')}"
+                placeholder="${escapeHtml(field.placeholder || '')}"${controlStyleAttrs}
                 class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-800 rounded-lg text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-rose-500"
               />
               @if (field.state.meta.errors.length) {

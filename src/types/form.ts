@@ -60,6 +60,10 @@ export interface FormField {
   defaultValue?: any;
   helperText?: string;
   colSpan?: 12 | 6 | 4 | 8; // Tailwind grid span
+  labelColor?: string; // Custom hex/color for label text
+  borderColor?: string; // Custom hex/color for control border
+  textColor?: string; // Custom hex/color for input entered text
+  placeholderColor?: string; // Custom hex/color for placeholder text
   options?: FieldOption[]; // for select, radio, multiselect
   validation?: ValidationRules;
   conditional?: ConditionalRule;
@@ -69,6 +73,9 @@ export interface FormField {
   stepDescription?: string;
 }
 
+export type FormEngine = 'angular-reactive-signals' | 'tanstack-angular-form' | 'angular-signal-form';
+export type UIFramework = 'tailwind' | 'material' | 'shadcn' | 'primeng';
+
 export interface FormConfig {
   id: string;
   title: string;
@@ -77,7 +84,8 @@ export interface FormConfig {
   submitButtonText: string;
   resetButtonText?: string;
   showResetButton: boolean;
-  frameworkTarget: 'angular-reactive-signals' | 'tanstack-angular-form';
+  frameworkTarget: FormEngine;
+  uiFramework?: UIFramework;
   fields: FormField[];
 }
 

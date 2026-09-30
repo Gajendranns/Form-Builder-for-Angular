@@ -343,6 +343,11 @@ ${bodyHtml}
 function renderFieldHtml(field: FormField, indent: string = '      '): string {
   const span = field.colSpan || 12;
   const colClass = `col-span-12 sm:col-span-${span}`;
+  const labelStyleAttr = field.labelColor ? ` [style.color]="'${escapeHtml(field.labelColor)}'"` : '';
+  const borderStyleAttr = field.borderColor ? ` [style.border-color]="'${escapeHtml(field.borderColor)}'"` : '';
+  const textStyleAttr = field.textColor ? ` [style.color]="'${escapeHtml(field.textColor)}'"` : '';
+  const placeholderStyleAttr = field.placeholderColor ? ` [style.--placeholder-color]="'${escapeHtml(field.placeholderColor)}'"` : '';
+  const controlStyleAttrs = `${borderStyleAttr}${textStyleAttr}${placeholderStyleAttr}`;
 
   if (field.type === 'formarray') {
     const arrayName = field.name;
@@ -350,7 +355,7 @@ function renderFieldHtml(field: FormField, indent: string = '      '): string {
     return `${indent}<!-- FormArray Repeater: ${field.label} -->
 ${indent}<div class="col-span-12 space-y-3 pt-2">
 ${indent}  <div class="flex items-center justify-between">
-${indent}    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">${escapeHtml(field.label)}</label>
+${indent}    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300"${labelStyleAttr}>${escapeHtml(field.label)}</label>
 ${indent}    <button
 ${indent}      type="button"
 ${indent}      (click)="add${pascal}()"
@@ -361,7 +366,7 @@ ${indent}    </button>
 ${indent}  </div>
 ${indent}  <div formArrayName="${arrayName}" class="space-y-3">
 ${indent}    @for (item of ${arrayName}Array.controls; track $index; let i = $index) {
-${indent}      <div [formGroupName]="i" class="p-3 bg-slate-900 border border-slate-800 rounded-lg relative">
+${indent}      <div [formGroupName]="i" class="p-3 bg-slate-900 border border-slate-800 rounded-lg relative"${borderStyleAttr}>
 ${indent}        <div class="flex items-center justify-between mb-2">
 ${indent}          <span class="text-xs font-medium text-slate-400">${escapeHtml(field.arrayConfig?.itemLabel || 'Item')} #{{ i + 1 }}</span>
 ${indent}          <button
@@ -390,14 +395,14 @@ ${indent}</div>`;
       controlInputHtml = `<textarea
   formControlName="${field.name}"
   placeholder="${escapeHtml(field.placeholder || '')}"
-  rows="3"
+  rows="3"${controlStyleAttrs}
   class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-800 rounded-lg text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-rose-500 transition-colors"
 ></textarea>`;
       break;
 
     case 'select':
       controlInputHtml = `<select
-  formControlName="${field.name}"
+  formControlName="${field.name}"${borderStyleAttr}${textStyleAttr}
   class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-rose-500 transition-colors"
 >
   <option value="" disabled selected>${escapeHtml(field.placeholder || 'Select option')}</option>
@@ -410,18 +415,18 @@ ${field.options?.map(opt => `  <option value="${escapeHtml(opt.value)}">${escape
 ${indent}  <input
 ${indent}    type="checkbox"
 ${indent}    id="${field.id}"
-${indent}    formControlName="${field.name}"
+${indent}    formControlName="${field.name}"${borderStyleAttr}
 ${indent}    class="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-900 text-rose-600 focus:ring-rose-500/20"
 ${indent}  />
-${indent}  <label for="${field.id}" class="text-xs text-slate-300 cursor-pointer select-none">
+${indent}  <label for="${field.id}" class="text-xs text-slate-300 cursor-pointer select-none"${labelStyleAttr}>
 ${indent}    ${escapeHtml(field.label)}
 ${field.validation?.required ? '<span class="text-rose-400 ml-0.5">*</span>' : ''}
 ${indent}  </label>
 ${indent}</div>`;
 
     case 'switch':
-      return `${indent}<div class="${colClass} flex items-center justify-between p-3 bg-slate-900/60 border border-slate-800 rounded-lg">
-${indent}  <label class="text-xs font-medium text-slate-200 cursor-pointer select-none">${escapeHtml(field.label)}</label>
+      return `${indent}<div class="${colClass} flex items-center justify-between p-3 bg-slate-900/60 border border-slate-800 rounded-lg"${borderStyleAttr}>
+${indent}  <label class="text-xs font-medium text-slate-200 cursor-pointer select-none"${labelStyleAttr}>${escapeHtml(field.label)}</label>
 ${indent}  <input
 ${indent}    type="checkbox"
 ${indent}    formControlName="${field.name}"
@@ -461,14 +466,14 @@ ${field.options?.map(opt => `  <label class="flex items-center gap-2 text-xs tex
       controlInputHtml = `<input
   type="${inputType}"
   formControlName="${field.name}"
-  placeholder="${escapeHtml(field.placeholder || '')}"
+  placeholder="${escapeHtml(field.placeholder || '')}"${controlStyleAttrs}
   class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-800 rounded-lg text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-rose-500 transition-colors"
 />`;
       break;
   }
 
   return `${indent}<div class="${colClass} space-y-1.5">
-${indent}  <label class="block text-xs font-medium text-slate-300">
+${indent}  <label class="block text-xs font-medium text-slate-300"${labelStyleAttr}>
 ${indent}    ${escapeHtml(field.label)}
 ${field.validation?.required ? '<span class="text-rose-400 ml-0.5">*</span>' : ''}
 ${indent}  </label>

@@ -13,18 +13,20 @@ import {
   Table,
   Check,
 } from 'lucide-react';
-import { FormConfig, FormField, FormSubmission } from '../types/form';
+import { FormConfig, FormField, FormSubmission, FormEngine } from '../types/form';
 
 interface LiveFormRunnerProps {
   formConfig: FormConfig;
   onSubmitSuccess: (submission: FormSubmission) => void;
   onGoToSubmissionsTable: () => void;
+  onUpdateFormEngine?: (engine: FormEngine) => void;
 }
 
 export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
   formConfig,
   onSubmitSuccess,
   onGoToSubmissionsTable,
+  onUpdateFormEngine,
 }) => {
   const isMultiStep = formConfig.layoutType === 'multi-step';
   const steps = isMultiStep ? formConfig.fields.filter((f) => f.type === 'step') : [];
@@ -521,10 +523,12 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                             checked={!!formData[field.name]}
                             onChange={(e) => handleFieldChange(field.name, e.target.checked)}
                             onBlur={() => handleBlur(field.name)}
+                            style={field.borderColor ? { borderColor: field.borderColor } : undefined}
                             className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-900 text-rose-600 focus:ring-rose-500"
                           />
                           <label
                             htmlFor={`run_${field.id}`}
+                            style={field.labelColor ? { color: field.labelColor } : undefined}
                             className="text-xs text-slate-300 cursor-pointer select-none leading-relaxed"
                           >
                             {field.label}
@@ -545,9 +549,15 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                     return (
                       <div
                         key={field.id}
+                        style={field.borderColor ? { borderColor: field.borderColor } : undefined}
                         className={`${colClass} flex items-center justify-between p-3 bg-slate-900/60 border border-slate-800 rounded-lg`}
                       >
-                        <span className="text-xs font-medium text-slate-200">{field.label}</span>
+                        <span
+                          className="text-xs font-medium text-slate-200"
+                          style={field.labelColor ? { color: field.labelColor } : undefined}
+                        >
+                          {field.label}
+                        </span>
                         <input
                           type="checkbox"
                           checked={!!formData[field.name]}
@@ -562,7 +572,10 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                   if (field.type === 'radio') {
                     return (
                       <div key={field.id} className={`${colClass} space-y-2`}>
-                        <label className="text-xs font-medium text-slate-300 block">
+                        <label
+                          className="text-xs font-medium text-slate-300 block"
+                          style={field.labelColor ? { color: field.labelColor } : undefined}
+                        >
                           {field.label}
                           {field.validation?.required && (
                             <span className="text-rose-400 ml-0.5">*</span>
@@ -580,6 +593,7 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                                 value={opt.value}
                                 checked={formData[field.name] === opt.value}
                                 onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                                style={field.borderColor ? { borderColor: field.borderColor } : undefined}
                                 className="text-rose-600 focus:ring-rose-500"
                               />
                               <span>{opt.label}</span>
@@ -599,7 +613,12 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                     return (
                       <div key={field.id} className={`${colClass} space-y-1.5`}>
                         <div className="flex justify-between items-center text-xs">
-                          <label className="font-medium text-slate-300">{field.label}</label>
+                          <label
+                            className="font-medium text-slate-300"
+                            style={field.labelColor ? { color: field.labelColor } : undefined}
+                          >
+                            {field.label}
+                          </label>
                           <span className="font-mono text-rose-400 font-semibold tabular-nums">
                             {val}
                           </span>
@@ -610,6 +629,7 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                           max={max}
                           value={val}
                           onChange={(e) => handleFieldChange(field.name, Number(e.target.value))}
+                          style={field.borderColor ? { accentColor: field.borderColor } : undefined}
                           className="w-full accent-rose-600 cursor-pointer"
                         />
                       </div>
@@ -621,7 +641,10 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                     const stars = formData[field.name] || 0;
                     return (
                       <div key={field.id} className={`${colClass} space-y-1.5`}>
-                        <label className="text-xs font-medium text-slate-300 block">
+                        <label
+                          className="text-xs font-medium text-slate-300 block"
+                          style={field.labelColor ? { color: field.labelColor } : undefined}
+                        >
                           {field.label}
                         </label>
                         <div className="flex items-center gap-1.5">
@@ -646,9 +669,18 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                   }
 
                   // Standard Input / Textarea / Select
+                  const customInputStyle: React.CSSProperties = {
+                    ...(!errorMsg && field.borderColor ? { borderColor: field.borderColor } : {}),
+                    ...(field.textColor ? { color: field.textColor } : {}),
+                    ...(field.placeholderColor ? ({ '--placeholder-color': field.placeholderColor } as any) : {}),
+                  };
+
                   return (
                     <div key={field.id} className={`${colClass} space-y-1.5`}>
-                      <label className="block text-xs font-medium text-slate-300">
+                      <label
+                        className="block text-xs font-medium text-slate-300"
+                        style={field.labelColor ? { color: field.labelColor } : undefined}
+                      >
                         {field.label}
                         {field.validation?.required && (
                           <span className="text-rose-400 ml-0.5">*</span>
@@ -662,6 +694,7 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                           onChange={(e) => handleFieldChange(field.name, e.target.value)}
                           onBlur={() => handleBlur(field.name)}
                           placeholder={field.placeholder || ''}
+                          style={customInputStyle}
                           className={`w-full px-3 py-2 text-xs bg-slate-900 border rounded-lg text-slate-100 placeholder:text-slate-500 focus:outline-none transition-colors ${
                             errorMsg
                               ? 'border-rose-500 focus:border-rose-400 ring-1 ring-rose-500/30'
@@ -673,6 +706,7 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                           value={formData[field.name] || ''}
                           onChange={(e) => handleFieldChange(field.name, e.target.value)}
                           onBlur={() => handleBlur(field.name)}
+                          style={customInputStyle}
                           className={`w-full px-3 py-2 text-xs bg-slate-900 border rounded-lg text-slate-100 focus:outline-none transition-colors ${
                             errorMsg
                               ? 'border-rose-500 focus:border-rose-400'
@@ -708,6 +742,7 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
                           }
                           onBlur={() => handleBlur(field.name)}
                           placeholder={field.placeholder || ''}
+                          style={customInputStyle}
                           className={`w-full px-3 py-2 text-xs bg-slate-900 border rounded-lg text-slate-100 placeholder:text-slate-500 focus:outline-none transition-colors ${
                             errorMsg
                               ? 'border-rose-500 focus:border-rose-400 ring-1 ring-rose-500/30'
@@ -799,11 +834,20 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
         <div className="lg:col-span-4 space-y-4">
           <div className="p-4 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 shadow-xl space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <span className="text-xs font-semibold text-white uppercase tracking-wider">
-                Angular Signal Inspector
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
-                FormGroup.status
+              <div>
+                <span className="text-xs font-semibold text-white uppercase tracking-wider block">
+                  Angular Signal Inspector
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  {formConfig.frameworkTarget === 'angular-signal-form'
+                    ? '⚡ Angular 19+ Signal Forms (Zoneless)'
+                    : formConfig.frameworkTarget === 'tanstack-angular-form'
+                    ? '🎯 @tanstack/angular-form (Zod)'
+                    : '📦 Angular Reactive Forms + Signals'}
+                </span>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-emerald-400 font-semibold">
+                {formConfig.frameworkTarget === 'angular-signal-form' ? 'Signals.computed' : 'FormGroup.status'}
               </span>
             </div>
 

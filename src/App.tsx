@@ -12,19 +12,22 @@ import { LiveFormRunner } from './components/LiveFormRunner';
 import { SubmissionsTable } from './components/SubmissionsTable';
 import { AngularProblemsGuide } from './components/AngularProblemsGuide';
 import { CodeExportModal } from './components/CodeExportModal';
+import { FormAiChat } from './components/FormAiChat';
+import { Sparkles } from 'lucide-react';
 import { PRESET_FORMS, INITIAL_SUBMISSIONS } from './data/presets';
-import { FormConfig, FormField, FormFieldType, FormSubmission } from './types/form';
+import { FormConfig, FormField, FormFieldType, FormSubmission, FormEngine } from './types/form';
 import { generateProjectZip } from './utils/codeGenerators/projectZipGenerator';
 
 export default function App() {
   const [formConfig, setFormConfig] = useState<FormConfig>(PRESET_FORMS.registration);
   const [submissions, setSubmissions] = useState<FormSubmission[]>(INITIAL_SUBMISSIONS);
-  const [activeTab, setActiveTab] = useState<'builder' | 'runner' | 'table' | 'problems' | 'code'>('builder');
+  const [activeTab, setActiveTab] = useState<'builder' | 'chat' | 'runner' | 'table' | 'problems' | 'code'>('builder');
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [isMobileCatalogOpen, setIsMobileCatalogOpen] = useState(false);
   const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
+  const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
 
   // Helper to extract all flat fields (for validation dependency selection)
   const getAllFields = (config: FormConfig): FormField[] => {
@@ -381,6 +384,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         formConfig={formConfig}
         onSelectPreset={handleSelectPreset}
+        onSelectEngine={(engine: FormEngine) => setFormConfig((prev) => ({ ...prev, frameworkTarget: engine }))}
         onOpenCodeModal={() => setIsCodeModalOpen(true)}
         onDownloadZip={handleDownloadZip}
         submissionsCount={submissions.length}
@@ -444,6 +448,7 @@ export default function App() {
                   setIsMobileInspectorOpen(true);
                 }
               }}
+              onUpdateFormConfig={(updates) => setFormConfig((prev) => ({ ...prev, ...updates }))}
               onOpenMobileCatalog={() => setIsMobileCatalogOpen(true)}
               onOpenMobileInspector={() => setIsMobileInspectorOpen(true)}
             />
@@ -486,11 +491,26 @@ export default function App() {
           </>
         )}
 
+        {activeTab === 'chat' && (
+          <div className="flex-1 h-full overflow-hidden">
+            <FormAiChat
+              currentFormConfig={formConfig}
+              onApplyForm={(newConfig) => {
+                setFormConfig(newConfig);
+                setActiveStepIndex(0);
+                setSelectedFieldId(null);
+              }}
+              onGoToBuilder={() => setActiveTab('builder')}
+            />
+          </div>
+        )}
+
         {activeTab === 'runner' && (
           <LiveFormRunner
             formConfig={formConfig}
             onSubmitSuccess={(sub) => setSubmissions((prev) => [sub, ...prev])}
             onGoToSubmissionsTable={() => setActiveTab('table')}
+            onUpdateFormEngine={(engine: FormEngine) => setFormConfig((prev) => ({ ...prev, frameworkTarget: engine }))}
           />
         )}
 
@@ -520,6 +540,41 @@ export default function App() {
         isOpen={isCodeModalOpen}
         onClose={() => setIsCodeModalOpen(false)}
       />
+
+      {/* Floating AI Form Assistant Trigger Button (available across all tabs) */}
+      {activeTab !== 'chat' && (
+        <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40">
+          <button
+            type="button"
+            onClick={() => setIsChatDrawerOpen(!isChatDrawerOpen)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-xl shadow-rose-950/60 hover:scale-105 active:scale-95 transition-all border border-rose-400/40"
+            title="Chat with Gemini to generate or update your Angular form"
+          >
+            <Sparkles className="h-4 w-4 animate-pulse" />
+            <span>AI Form Assistant</span>
+          </button>
+        </div>
+      )}
+
+      {/* Floating Slide-Over Drawer for Instant Chat & Form Generation */}
+      {isChatDrawerOpen && activeTab !== 'chat' && (
+        <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[500px] bg-slate-950 shadow-2xl animate-in slide-in-from-right duration-200 flex flex-col border-l border-slate-800">
+          <FormAiChat
+            currentFormConfig={formConfig}
+            onApplyForm={(newConfig) => {
+              setFormConfig(newConfig);
+              setActiveStepIndex(0);
+              setSelectedFieldId(null);
+            }}
+            isFloatingDrawer={true}
+            onCloseDrawer={() => setIsChatDrawerOpen(false)}
+            onGoToBuilder={() => {
+              setIsChatDrawerOpen(false);
+              setActiveTab('builder');
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

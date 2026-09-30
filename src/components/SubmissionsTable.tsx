@@ -68,6 +68,20 @@ export const SubmissionsTable: React.FC<SubmissionsTableProps> = ({
     return initial;
   });
 
+  // Sync visible columns when availableColumns change (e.g. switching preset or changing fields)
+  React.useEffect(() => {
+    setVisibleColKeys((prev) => {
+      // If none of previous keys exist in new availableColumns, reinitialize with first 5
+      const stillValid = new Set([...prev].filter((k) => availableColumns.some((c) => c.key === k)));
+      if (stillValid.size === 0 && availableColumns.length > 0) {
+        const next = new Set<string>();
+        availableColumns.slice(0, 5).forEach((c) => next.add(c.key));
+        return next;
+      }
+      return stillValid.size > 0 ? stillValid : new Set(availableColumns.slice(0, 5).map((c) => c.key));
+    });
+  }, [availableColumns]);
+
   // Filtered and Sorted Submissions
   const processedSubmissions = useMemo(() => {
     let result = [...submissions];

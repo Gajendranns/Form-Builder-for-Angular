@@ -431,6 +431,102 @@ export const PRESET_FORMS: Record<string, FormConfig> = {
       },
     ],
   },
+
+  signalSurvey: {
+    id: 'signalSurvey',
+    title: 'Angular 19 Signal-Driven Developer Survey',
+    description: 'Engineered with the latest Angular Signal Forms architecture. Fine-grained signal state, computed validation, and zoneless OnPush.',
+    layoutType: 'single-page',
+    submitButtonText: 'Submit Developer Feedback',
+    showResetButton: true,
+    resetButtonText: 'Reset Survey',
+    frameworkTarget: 'angular-signal-form',
+    fields: [
+      {
+        id: 's_handle',
+        name: 'developerHandle',
+        label: 'GitHub / GitLab Handle',
+        type: 'text',
+        placeholder: '@angular_architect',
+        colSpan: 6,
+        validation: {
+          required: true,
+          minLength: 3,
+        },
+      },
+      {
+        id: 's_email',
+        name: 'devEmail',
+        label: 'Work Email',
+        type: 'email',
+        placeholder: 'dev@enterprise.io',
+        colSpan: 6,
+        validation: {
+          required: true,
+          emailValidator: true,
+        },
+      },
+      {
+        id: 's_version',
+        name: 'angularVersion',
+        label: 'Primary Angular Target in Production',
+        type: 'select',
+        defaultValue: 'ng19',
+        colSpan: 6,
+        options: [
+          { label: 'Angular 19 (Signals & Zoneless)', value: 'ng19' },
+          { label: 'Angular 18 (Hydration & Control Flow)', value: 'ng18' },
+          { label: 'Angular 17 (Standalone & Defer)', value: 'ng17' },
+          { label: 'Angular 16 or earlier (Legacy)', value: 'ngLegacy' },
+        ],
+        validation: { required: true },
+      },
+      {
+        id: 's_adoption',
+        name: 'zonelessEnabled',
+        label: 'Running with Experimental Zoneless Change Detection',
+        type: 'switch',
+        defaultValue: true,
+        helperText: 'provideExperimentalZonelessChangeDetection() active in app.config.ts',
+        colSpan: 6,
+      },
+      {
+        id: 's_satisfaction',
+        name: 'signalsSatisfaction',
+        label: 'Overall Satisfaction with Angular Signals & Computeds',
+        type: 'rating',
+        defaultValue: 5,
+        colSpan: 6,
+      },
+      {
+        id: 's_perf_score',
+        name: 'performanceGain',
+        label: 'Reported Performance Gain (%) Over Legacy Forms',
+        type: 'slider',
+        defaultValue: 45,
+        colSpan: 6,
+        validation: { min: 0, max: 100 },
+      },
+      {
+        id: 's_feedback',
+        name: 'architectureNotes',
+        label: 'Key Architectural Insights & Observations',
+        type: 'textarea',
+        placeholder: 'Zero RxJS subscriptions, instant computed derived state, seamless unit testing...',
+        colSpan: 12,
+        validation: { required: true, minLength: 10 },
+      },
+      {
+        id: 's_consent',
+        name: 'publishResults',
+        label: 'I agree to include aggregated DX data in the Annual Angular Benchmark Report',
+        type: 'checkbox',
+        defaultValue: true,
+        colSpan: 12,
+        validation: { required: true },
+      },
+    ],
+  },
 };
 
 export const INITIAL_SUBMISSIONS: FormSubmission[] = [
@@ -671,5 +767,64 @@ export class TanStackFormComponent {
 }`,
     explanation: 'NgFormCraft can export your visual form directly into `@tanstack/angular-form` syntax with `@tanstack/form-core` and Zod adapter, ready to run in any modern Angular app!',
     tags: ['TanStack', 'Headless', 'ZodAdapter'],
+  },
+  {
+    id: 'prob-signal-forms',
+    title: 'Official Angular Signal Forms (angular.dev/essentials/signal-forms)',
+    painPoint: 'Traditional ReactiveFormsModule introduces significant friction: untyped controls, complex AbstractControl inheritance, RxJS memory leaks from uncancelled valueChanges, and unnecessary Zone.js tick cycles that hurt performance in modern apps.',
+    angularLegacyWay: `// Verbose Reactive Forms with RxJS subscription overhead:
+form = new FormGroup({
+  email: new FormControl('', [Validators.required, Validators.email]),
+  password: new FormControl('', [Validators.required])
+});
+
+// Manual subscription tracking needed:
+ngOnInit() {
+  this.form.valueChanges
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(val => this.recalculate(val));
+}`,
+    solutionWay: `// Official Angular Signal Forms (from @angular/forms/signals):
+import { Component, signal } from '@angular/core';
+import { form, FormField, required, email, minLength, submit } from '@angular/forms/signals';
+
+@Component({
+  selector: 'app-login-signal-form',
+  standalone: true,
+  imports: [FormField],
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <!-- Official [formField] directive automatically syncs model and attributes -->
+      <input type="email" [formField]="userForm.email" placeholder="name@domain.com" />
+      @if (userForm.email().touched && userForm.email().errors()?.length) {
+        <span class="error">{{ userForm.email().errors()![0].message }}</span>
+      }
+
+      <input type="password" [formField]="userForm.password" />
+      <button type="submit" [disabled]="userForm().submitting">Log In</button>
+    </form>
+  \`
+})
+export class LoginSignalFormComponent {
+  // 1. Single model signal as the source of truth
+  readonly credentials = signal({ email: '', password: '' });
+
+  // 2. Official form() with declarative schema validation
+  readonly userForm = form(this.credentials, (schema) => {
+    required(schema.email, { message: 'Email is required' });
+    email(schema.email, { message: 'Invalid corporate email format' });
+    required(schema.password, { message: 'Password is required' });
+    minLength(schema.password, 8, { message: 'Min 8 characters' });
+  });
+
+  async onSubmit(e?: Event) {
+    if (e) e.preventDefault();
+    await submit(this.userForm, async () => {
+      console.log('Valid submission:', this.credentials());
+    });
+  }
+}`,
+    explanation: 'Follows the official Angular documentation (https://angular.dev/essentials/signal-forms): uses the model-first signal approach, the official form() function with schema-based validators (required, minLength, email, validateTree, applyWhen), the [formField] directive, and submit() helper.',
+    tags: ['SignalForms', 'angular.dev', 'FormField', 'Official'],
   },
 ];
