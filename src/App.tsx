@@ -449,6 +449,7 @@ export default function App() {
                 }
               }}
               onUpdateFormConfig={(updates) => setFormConfig((prev) => ({ ...prev, ...updates }))}
+              onOpenAiChat={() => setIsChatDrawerOpen(true)}
               onOpenMobileCatalog={() => setIsMobileCatalogOpen(true)}
               onOpenMobileInspector={() => setIsMobileInspectorOpen(true)}
             />
@@ -541,17 +542,19 @@ export default function App() {
         onClose={() => setIsCodeModalOpen(false)}
       />
 
-      {/* Floating AI Form Assistant Trigger Button (available across all tabs) */}
+      {/* Floating AI Form Assistant Trigger Button (positioned bottom-left so it never overlaps the submit button on bottom-right) */}
       {activeTab !== 'chat' && (
-        <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40">
+        <div className="fixed bottom-4 sm:bottom-6 left-4 sm:left-6 z-30">
           <button
             type="button"
             onClick={() => setIsChatDrawerOpen(!isChatDrawerOpen)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-xl shadow-rose-950/60 hover:scale-105 active:scale-95 transition-all border border-rose-400/40"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-900/95 hover:bg-slate-800 text-slate-200 hover:text-white font-medium text-xs shadow-xl shadow-black/80 hover:scale-105 active:scale-95 transition-all border border-slate-700/80 backdrop-blur-md group"
             title="Chat with Gemini to generate or update your Angular form"
           >
-            <Sparkles className="h-4 w-4 animate-pulse" />
-            <span>AI Form Assistant</span>
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-indigo-600 text-white shadow-xs">
+              <Sparkles className="h-3 w-3 animate-pulse" />
+            </span>
+            <span className="font-semibold text-white">AI Assistant</span>
           </button>
         </div>
       )}

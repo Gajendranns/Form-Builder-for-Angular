@@ -325,7 +325,7 @@ export const LiveFormRunner: React.FC<LiveFormRunnerProps> = ({
 
   return (
     <div className="flex-1 bg-slate-900/30 overflow-y-auto p-3.5 sm:p-6 lg:p-8 flex flex-col items-center">
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 pb-28">
         {/* Main Interactive Form Column */}
         <div className="lg:col-span-8 space-y-6">
           <div className="p-4 sm:p-6 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 shadow-xl">

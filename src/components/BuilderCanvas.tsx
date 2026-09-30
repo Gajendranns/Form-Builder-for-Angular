@@ -114,6 +114,7 @@ interface BuilderCanvasProps {
   onDeleteStep: (stepIndex: number) => void;
   onSelectFormLevel: () => void;
   onUpdateFormConfig?: (updates: Partial<FormConfig>) => void;
+  onOpenAiChat?: () => void;
   onOpenMobileCatalog?: () => void;
   onOpenMobileInspector?: () => void;
 }
@@ -227,6 +228,7 @@ export const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
   onDeleteStep,
   onSelectFormLevel,
   onUpdateFormConfig,
+  onOpenAiChat,
   onOpenMobileCatalog,
   onOpenMobileInspector,
 }) => {
@@ -434,6 +436,19 @@ export const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
                 <span className="hidden sm:inline">Live Test</span>
               </button>
             </div>
+
+            {/* AI Assistant Quick Trigger in Floating Bar */}
+            {onOpenAiChat && (
+              <button
+                type="button"
+                onClick={onOpenAiChat}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-rose-600 via-rose-500 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white shadow-xs hover:scale-105 active:scale-95 transition-all shrink-0"
+                title="Open AI Form Assistant"
+              >
+                <Sparkles className="h-3 w-3" />
+                <span className="hidden sm:inline">AI Prompt</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -484,8 +499,8 @@ export const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
         )}
       </div>
 
-      {/* Main Canvas Frame Container */}
-      <div className="w-full max-w-4xl space-y-4 sm:space-y-6">
+      {/* Main Canvas Frame Container with bottom padding to prevent any button collision */}
+      <div className="w-full max-w-4xl space-y-4 sm:space-y-6 pb-28">
         {/* Interactive Mode Banner Indicator */}
         {previewMode === 'interactive' && (
           <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/60 text-emerald-200 text-xs">
